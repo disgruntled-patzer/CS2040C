@@ -14,17 +14,40 @@ struct node {
 
 void append (node **headref, int newdata);
 void deletenode(node **headref, int key);
+void deletenodeN(node **headref, int N);
 void printlist (node *n);
 
 int main(int argc, char const *argv[])
 {
+    int input, length; //Input: To store user input, Length = To store initial list length
+    int counter; //Used for running loops
+
     node *head  = NULL; //Start with an empty list
-    append (&head, 6);
-    append (&head, 5);
-    append (&head, 7);
+
+    cout << "Enter list length: "; //Linked lists can be variable length, unlike arrays!
+    cin >> length;
+
+    //User inputs data into the linked list
+    for (counter = 1; counter <= length; counter++){
+        cout << "Enter data for Node " << counter << ": ";
+        cin >> input;
+        append (&head, input);
+    }
+
     printlist(head);
-    deletenode(&head, 5);
+
+    //To test that our deletenode function works
+    cout << "Input a data to be deleted from the list: ";
+    cin >> input;
+    deletenode(&head, input);
     printlist(head);
+
+    //To test that deletenodeN function works
+    cout << "Input a node to delete: ";
+    cin >> input;
+    deletenodeN(&head, input);
+    printlist(head);
+
     return 0;
 }
 
@@ -81,7 +104,7 @@ void deletenode(node **headref, int key) {
     
     //After loop exits, there are two possible scenarios:
     //Scenario 1: Loop exited without finding key
-    if (finder == NULL){
+    if (finder == NULL){ //Note: not *finder == NULL. We want to see whether the finder POINTS to NULL
         cout<<"Key not found\n";
         return;
     }
@@ -90,7 +113,48 @@ void deletenode(node **headref, int key) {
         previous->ptr = finder->ptr; //Link the previous node to the node after "finder"
         delete finder; //Then delete the node that contains the key
     }
+}
 
+//Delete a node at position N in the linked list
+void deletenodeN(node **headref, int N){
+
+    //Edge Case 1: List is empty
+    if (*headref == NULL){
+        cout << "List is empty\n";
+        return;
+    }
+
+    //Intialize "finder" and "previous" variables same as deletenode function
+    node *finder = *headref;
+    node *previous;
+
+    //Edge Case 2: Node to be deleted is the first node
+    if (N == 1){
+        *headref = finder->ptr;
+        delete finder; //Then we delete the node straightaway, no need to use "previous" variable
+    }
+
+    //Default: Intialize a "counter" variable to traverse the list using a loop
+    int counter = 1;
+
+    //Use a do-while loop to ensure previous-finder variable updates are done at least once
+    //If we use a for/while loop, then in the special case N = 2, loop will exit without updating 
+    do {
+        counter++; //Start at counter = 2, since N = 1 is already taken care of in Edge Case 2
+        previous = finder;
+        finder = finder->ptr; //previous-finder is updated similarly to deletenode function
+        if (finder == NULL){ //If N is longer than list length, exit
+            cout << "Data input exceeds list length\n";
+            return;
+        } //Note that counter is updated before previous-finder
+        //This is to make sure the NULL check is always performed
+        //Especially in the special case where N is greater than list length by 1
+    } while (counter < N);
+
+    //At the end of the do-while loop, "finder" points to the node N that will be deleted
+    //While "previous" points to the previous node. Hence, perform the necessary delete functions
+    previous->ptr = finder->ptr;
+    delete finder;
 
 }
 
