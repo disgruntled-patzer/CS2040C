@@ -96,8 +96,6 @@ int main(int argc, char const *argv[])
     int input, length; //Input: To store user input, Length = To store initial list length
     int counter; //Used for running loops
 
-    node *head  = NULL; //Start with an empty list
-
     cout << "Enter list length: "; //Linked lists can be variable length, unlike arrays!
     cin >> length;
 
