@@ -1,0 +1,10 @@
+#vscode files
+.vscode/
+*.json
+
+#exe files created by compiling cpp programs
+*.exe
+
+#OS Programs
+.Spotlight-V100
+.Trashes
