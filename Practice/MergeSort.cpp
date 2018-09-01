@@ -6,7 +6,7 @@ using namespace std;
 
 #define NMAX 500
 
-class Median {
+class Sort {
 
     private:
         int N;
@@ -26,8 +26,8 @@ class Median {
 
             inputN();
             
-            for (int counter = 0; counter < N; counter++){
-                cin >> array[counter];
+            for (int i = 0; i < N; i++){
+                cin >> array[i];
             }
 
             mergesort(0, N);
@@ -39,7 +39,7 @@ class Median {
             int i, j, k; //Loop counters used to merge subarrays
             int n1 = M - L + 1; //Number of cells in Left subarray (from l to m)
             int n2 = R - M; //Number of cells in Right subarray (from m+1 to r)
-            unsigned long Left[n1], Right[n2]; //Left and Right subarrays
+            int Left[n1], Right[n2]; //Left and Right subarrays
 
             //Assign the Left and Right subarrays with their respective data
             for (i = 0; i < n1; i++){
@@ -99,10 +99,8 @@ class Median {
         //To print the final output: Continuous median for each test case
         void printresult (){
 
-            int counter;
-
-            for (counter = 0; counter < N; counter++){
-                cout << array[counter] << endl;
+            for (int i = 0; i < N; i++){
+                cout << array[i] << endl;
             }
         }
 
@@ -110,7 +108,7 @@ class Median {
 
 int main(int argc, char const *argv[])
 {
-    Median test;
+    Sort test;
 
     test.inputarray();
     test.printresult();
