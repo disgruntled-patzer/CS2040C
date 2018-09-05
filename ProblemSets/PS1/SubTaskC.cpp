@@ -10,17 +10,19 @@ using namespace std;
 class Median {
 
 	private:
-		int TC; //Number of test cases (which is 1 in this case, so it is effectively just for show)
+		int TC; //Number of test cases (which is 0 or 1 in this case, so it is effectively just for show)
 		int N; //Max number of integers in the array, for each test case
-        vector<int> array; //Variable-Length Array used for each test case to find continuous median (only 1, 3 and 5) 
+        vector<int> array; //Variable-Length Array used for each test case to find continuous median (only 1, 3 and 5)
+		int count[3] = {0}; //Array to store the number of occurences of 1, 3 and 5 in the "array" vector above
 
 	public:
 
-		//Get user to input number of test cases
-		void inputTC () {
+		//Get user to input number of test cases (in this case, it is limited to 0 or 1)
+		int inputTC () {
 			int data;
 			cin >> data;
 			TC = data;
+			return TC;
 		}
 
 		//Get user to input number of integers in each test case array
@@ -41,69 +43,71 @@ class Median {
 			}
 		}
 
-		/*Insert the newest array entry into its sorted position along the array entries before it
-		  Note that we don't need to use a sorting algorithm, because all the entries before the new entry
-		  would already have been sorted. Thus, all we need to do is perform a search to find the 
-		  correct position to insert the new entry*/
-		void insert(int low, int current){
+		/*Insert new data into its sorted position. Since all data is either 1, 3 or 5, we can just count the number
+		of occurences of each digit, and store them in an array called "count". In the "count" array, the 0th entry
+		stores occurences of digit 1, 1st entry stores occurences of digit 3, 2nd entry stores occurences of digit 5*/
+		void insert(int data){
 
-			int temp; //Used when inserting the entry into its new position
-
-			if (low == current){ //Edge Case 1: No array before new entry, no need to do any insert
-				return;
-			}
-			if (low == current - 1){ //Edge Case 2: Only one entry before new entry
-				if (array[low] > array[current]){ //Then just compare and swap if necessary
-					swap(array[current], array[low]);
-				}
-				return;
-			}
-            //Edge Case 3: New entry is already larger than previous entry, thus it is in its correct position
-            if (array[current - 1] <= array[current]){
-                return;
-            }
-
-			//No edge cases: Must do a search to insert the new entry into its desired position
-			temp = array[current]; //Assign the new entry to temp variable to be inserted later
-
-			int i;
-
-			/*Scan backwards along the array to find the point where to insert the new entry
-			Since all entries are 1, 3 or 5, just scan until either of three conditions occur:
-
-			1. Current entry equals new entry, then insert new array after current entry (array[i] != array[current])
-			2. New entry's number is not present in array, and new entry is smaller than all
-				other entries in the array. Then insert new entry at start of array (i >= 0)
-			3. New entry's number is not present in array, but new entry is not the smallest
-				number in array. Then insert new entry at the position immediately after
-				the last array entry that is smaller than the new entry (array[i] > array[current]*/
-			
-			for (i = current - 1; i >= 0 && (array[i] != array[current]) || array[i] > array[current]; i--){
-				array[i + 1] = array[i]; //While scanning, shift all scanned entries to the right to make space for new entry
-			}
-			//After exiting the loop, insert new entry into its desired position
-			if (i == 0){
-				array[i] = temp; //Insert new entry into the starting position (if i is at start of array)
-			}
-			else {
-				array[i + 1] = temp; //Otherwise insert new entry into the position after ith entry
+			switch (data){
+				case 1:
+					count[0]++;
+					break;
+				case 3:
+					count[1]++;
+					break;
+				case 5:
+					count[2]++;
+					break;
+				default:
+					break;
 			}
 
 		}
 
-		//Finds median of a set of integers within an array
+		/*Finds median of a set of integers within an array. Note that since all integers are 1, 3 or 5
+		This allows us to use simple if-else statements to scan the "count" array finding the median*/
 		int findmedian (int x){
 
-			int median;
+			int position = x/2, median; //Position returns the location of the entry that will be stored in median
 
-			if (x % 2 != 0){ //If number of integers is odd
-				median = array[x/2]; //Return the middle integer (note: x/2 because arrays start from 0)
+			if (x % 2 != 0){ //If number of integers is odd, then compare the middle entry (position + 1)
+				if (position + 1 <= count[0]){
+					median = 1;
+				}
+				else if (position + 1 <= count[0] + count[1]){
+					median = 3;
+				}
+				else {
+					median = 5;
+				}
 			}
 			else { //If number of integers is even
-				median = (array[(x/2) - 1] + array[x/2]) / 2; //Calculate average of middle two integers
+				int median1, median2; //Because we will be taking average of two middle entries
+
+				if (position <= count[0]){ //First, find the value of the first middle entry
+					median1 = 1;
+				}
+				else if (position <= count[0] + count[1]){
+					median1 = 3;
+				}
+				else {
+					median1 = 5;
+				}
+
+				if (position + 1 <= count[0]){ //Then find value of second middle entry
+					median2 = 1;
+				}
+				else if (position + 1 <= count[0] + count[1]){
+					median2 = 3;
+				}
+				else {
+					median2 = 5;
+				}
+
+				median = (median1 + median2)/2; //Calculate average of middle two integers
 				median = floor (median); //And return the rounded down value
 			}
-			cout << median << endl; //Debug statement
+			//cout << median << endl; //Debug statement
 
 			return median;
 		}
@@ -116,7 +120,7 @@ class Median {
 			inputN();
 			inputarray();
 			for (int b = 0; b < N; b++){ //When the bth integer of array is read, median of integers from 0 to b is calculated and added to "output"
-				insert(0, b); //If the bth integer needs to be sorted, then insert it into the desired sorted position
+				insert(array[b]); //Scan whether the bth integer is 1, 3 or 5 (for sorting purposes later)
 				output = output + findmedian(b + 1); // Use b + 1 since arrays start from 0 instead of 1
 			}
 			cout << output << endl; //Reset continuous median variable for next iteration
@@ -132,7 +136,12 @@ int main(int argc, char const *argv[])
 	
 	Median test;
 
-	test.inputTC();
+	int TC = test.inputTC();
+
+	if (TC == 0){ //If zero test cases, then no point continuing
+		return 0;
+	}
+
 	test.findmedians();
     cout << "By submitting this source code, I declare that it is MY OWN implementation work. "
         "I fully understand the underlying algorithm behind the code that I wrote and can prove it "
