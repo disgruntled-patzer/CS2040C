@@ -1,0 +1,13 @@
+Notes from Lab 04
+
+Avoid using getchar, use cin.get() instead
+	getchar is C standard, may run into trouble if we do sync_with_stdio(false)
+
+Problem Sets: Actually no need to store the output lines into one massive array/vector
+	Instead, can just read and output at the same time (i.e. scan the cin and then output, then continue to cin)
+
+Can convert char to int using int (char - '0')
+
+To read string until newline character is reached,
+	Use getline
+	Or can look into stringstream
