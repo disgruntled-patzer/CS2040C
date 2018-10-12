@@ -1,3 +1,4 @@
+// This isn't really a hash table (no hash function!), more of a direct access table with separate chaining
 #include <iostream>
 #include <string>
 # include <list>
