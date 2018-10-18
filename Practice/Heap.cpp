@@ -64,25 +64,25 @@ class Heap {
         }
 
         //Bubble down procedure to maintain max heap property
-        void bubbledown(int root){
+        void bubbledown(int pos){
 
-            int child = getleftchild(root); //Start with left child first
+            int child = getleftchild(pos); //Start with left child first
             
             if (child < size){ //If left child exists (if not, then the base case has been reached)
-                int rightchild = getrightchild(root);
+                int rightchild = getrightchild(pos);
                 //If right child exists and it is larger than the left child
                 if (rightchild < size && tree[rightchild] > tree[child]){
                     child = rightchild; //Always take the larger child
                 }
-                if (tree[root] < tree[child]) { //Compare parent and child and swap if necessary
-                    swap(root, child);
+                if (tree[pos] < tree[child]) { //Compare parent and child and swap if necessary
+                    swap(pos, child);
                     bubbledown(child); //Then go to the new child position and continue bubbling down
                 }
             } //If max heap property satisfied, do nothing
         }
 
         //Insert a new node
-        void insert(int data){
+        void push(int data){
             
             tree.push_back(data); //Insert at the leaf position
             ++size;
@@ -90,7 +90,7 @@ class Heap {
         } //Note (size - 1) because vectors start from zero
 
         //Delete the largest node (at the root) and return it as an int
-        int deleteroot(){
+        int pop(){
             int rootitem = tree[0]; //Extract root
             tree[0] = tree[--size]; //Take the leaf at the end of the vector and put it at the root (and decrease size)
             tree.pop_back(); //Delete the leaf that was moved
@@ -112,9 +112,9 @@ int main(int argc, char const *argv[])
     Heap CS2040C;
 
     CS2040C.printtree();
-    CS2040C.insert(10);
+    CS2040C.push(10);
     CS2040C.printtree();
-    int extract = CS2040C.deleteroot();
+    int extract = CS2040C.pop();
     CS2040C.printtree();
     cout << extract << endl;
     
