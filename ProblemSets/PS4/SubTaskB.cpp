@@ -1,7 +1,7 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-// write your matric number here: A0164850E
+// write your matric number here: A0164750E
 // write your name here: Lau Yan Han
 // write list of collaborators here: Pretty much anyone who was discussing in the CS2040C telegram group
 // year 2018/19 Sem1 hash code: IEXVAR3BOJ4VIYLO (do NOT delete this line)
