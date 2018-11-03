@@ -1,8 +1,10 @@
 /*Adopted the sample AVL demo from Mooshak and converted it into a string AVL Tree
 This code gives loads of errors but I just submit first to let the TAs see my 
-AVL implementation*/
+AVL implementation
+Ten minutes left to closing of PS4. I submit this incorrect solution without regrets,
+knowing that I learnt much about AVL Trees in the process*/
 
-// write your matric number here: A0164850E
+// write your matric number here: A0164750E (my matric no in previous submissions were wrong)
 // write your name here: Lau Yan Han
 // write list of collaborators here: Pretty much anyone who was discussing in the CS2040C telegram group
 // year 2018/19 Sem1 hash code: IEXVAR3BOJ4VIYLO (do NOT delete this line)
@@ -25,7 +27,7 @@ struct node { //AVL Tree node
 class AVLTree {
 	private:
 		node *root;
-
+		
 		int h(node* T){ //Return height of a node
 			if (T == NULL){
 				return -1;
@@ -35,7 +37,7 @@ class AVLTree {
 			}
 		}
 
-		int getsize(node* T){
+		int getsize(node* T){ //Return size of a node's tree (node itself inclusive)
 			if (T == NULL){
 				return 0;
 			}
@@ -148,7 +150,7 @@ class AVLTree {
 				T->size = getsize(T->left) + getsize(T->right) + 1;
 			}
 
-			return T; //Return the updated AVL
+			return T;
 		}
 
 		node* findMin(node* T) {
@@ -215,25 +217,20 @@ class AVLTree {
 
 		//Return first entry that is NOT smaller than v
 		node* lower_bound(node* T, string v){
-			if (T == NULL){
+			if (T == NULL || T->data == v){
 				return T;
 			}
-			if (T->data < v){ //If less, then keep going up till T is no longer smaller than v
-				while (T->data < v){
-					T = successor(T);
-					if (T == NULL){
-						return T; //Edge case: All elements smaller than T, then no lower bound exists
-					}
+			else if (T->data < v){
+				if (T->right == NULL){
+					return T;
 				}
+				return lower_bound(T->right, v);
 			}
-			else{ //If greater or equal, then keep going down till T is no longer equals or larger than v
-				while (T->data >= v){
-					auto temp = predecessor(T);
-					if (temp == NULL || temp->data < v){
-						return T; //If predecessor doesn't exist or is already smaller than v
-					} //Then T is already the first entry that is not smaller than v
-					T = temp;
+			else{ //T->data >= v
+				if (T->left == NULL){
+					return T;
 				}
+				return lower_bound(T->left, v);
 			}
 			return T;
 		}
@@ -243,22 +240,23 @@ class AVLTree {
 			if (T == NULL){
 				return T;
 			}
-			if (T->data <= v){
-				while (T->data <= v){
-					T = successor(T);
+			else if (T->data <= v){
+				if (T->right == NULL){
+					return NULL;
 				}
-				if (T == NULL){
+				if (successor(T)->data > v){
+					return successor(T);
+				}
+				return lower_bound(T->right, v);
+			}
+			else{ //T->data > v
+				if (T->left == NULL){
 					return T;
 				}
-			}
-			else{
-				while (T->data > v){
-					auto temp = predecessor(T);
-					if (temp == NULL || temp->data <= v){
-						return T;
-					}
-					T = temp;
+				if (predecessor(T)->data <= v){
+					return T;
 				}
+				return lower_bound(T->left, v);
 			}
 			return T;
 		}
@@ -266,19 +264,19 @@ class AVLTree {
 		node* successor(node* T) {
 			if (T->right != NULL) // this subtree has right subtree
 				return findMin(T->right); // the successor is the minimum of right subtree
-			else { //There is no more right subtree to search, backtrack to see if successor is higher up the tree
-				node* par = T->parent; //par = par(ent)
-				node* cur = T; //cur = cur(rent)
+			else { //There is no more right subtree to search, backtrack to search higher up
+				node* par = T->parent; //par(ent)
+				node* cur = T; //cur(rent)
 				// if par is not root and cur is its right children, continue moving up
 				while ((par != NULL) && (cur == par->right)) {
 					cur = par;
 					par = cur->parent;
 				}
-				return par; //This is the successor of T. It will be NULL if successor is not found
+				return par; //This is the successor of T. It will be NULL if not found
 			}
 		}
 
-		node* predecessor(node* T) { //code is basically same as successor except it searches the left subtrees
+		node* predecessor(node* T) { //Code is almost the same as successor
 			if (T->left != NULL)
 				return findMax(T->left);
 			else {
@@ -292,6 +290,38 @@ class AVLTree {
 			}
 		}
 
+		//Returns the number of nodes that come before node T
+		//Algo modified from Tutorial 8. v is assumed to exist in the tree
+		//All those silly NULL checks are to catch any NULL edge cases o.o
+		int rank (node* T, string v){
+			if (T->data == v){
+				if  (T->left == NULL){
+					return 0;
+				}
+				return T->left->size;
+			}
+			else if (T->data > v){
+				if (T->left == NULL){
+					return 0;
+				}
+				return rank(T->left, v);
+			}
+			else {
+				if (T->left == NULL && T->right == NULL){
+					return 0;
+				}
+				else if (T->left == NULL){
+					return rank(T->right, v);
+				}
+				else if (T->right == NULL){
+					return T->left->size + 1;
+				}
+				else{
+					return (T->left->size + 1) + rank(T->right, v);
+				}
+			}
+		}
+		
 	public:
 		AVLTree() {
 			root = NULL;
@@ -347,19 +377,21 @@ class AVLTree {
 		}
 
 		//Return distance between two nodes, start and end INCLUSIVE
-		int distance(node* start, node* end){
-			if (start == NULL && end == NULL){
+		//Using predecessor/successor method is too inefficient hence use rank
+		//Rank assumes the searched string exists in the tree, so NULL edge cases are resolved here
+		int distance(node* start, node* end){			
+			if (root == NULL || start == NULL){
 				return 0;
 			}
-
-			int count = 0;
-			node* temp = start;
-			while (temp != end){
-				++count;
-				temp = successor(temp);
+			else if (start == NULL && end == NULL) {
+				return 0;
 			}
-			++count;
-			return count;
+			else if (end == NULL){
+				return root->size - rank(root, start->data);
+			}
+			else{
+				return rank(root, end->data) - rank(root, start->data) + 1;
+			}
 		}
 
 		int size(){
@@ -377,12 +409,12 @@ class PS4{
 	private:
 
 		/*List of suggestions implemented as AVLTree - male and female
-		  It is implemented as an array of sets, with each array entry corresponding
-		  to the first letter of each baby name*/
+		  It is implemented as an array of sets, each array entry corresponds
+		  to the first letter of each name*/
 		AVLTree suggestions_male[26]; 
 		AVLTree suggestions_female[26];	
 
-		//Convert A - Z to 0 - 25 (using ASCII definitions)
+		//Convert A - Z to 0 - 25 (using ASCII)
 		int char_to_int(char data){
 			return int(data) - 65;
 		}
@@ -399,13 +431,11 @@ class PS4{
 			auto end = suggestions_male[endprefix].upper_bound(END);
 
 			if (startprefix == endprefix){ //If both START and END have same first digit		
-				cout << "Same Range" << endl;
-				ans = distance(start, end);
+				ans = suggestions_male[startprefix].distance(start, end);
 			}
 			else{
-				cout << "Different Ranges" << endl;
 				//Get distance from START to end of its set
-				ans += distance(start, suggestions_male[startprefix].end());
+				ans += suggestions_male[startprefix].distance(start, suggestions_male[startprefix].end());
 
 				//For entries between start and end, get the entire set size
 				for (int j = startprefix + 1; j < endprefix; ++j){
@@ -413,23 +443,25 @@ class PS4{
 				}
 
 				//Get distance from start of END set to END
-				ans += distance(suggestions_male[endprefix].begin(), end);
+				ans += suggestions_male[endprefix].distance(suggestions_male[endprefix].begin(), end);
 			}
 
-			/*Deal with the edge case where the entry at the
-			  right boundary equals END. Then this entry cannot be counted, since right
-			  boundary is open. Hence decrement ans by 1 in such a case*/
+			/*Deal with edge case where the entry at the right boundary greater or equals END.
+			Then this entry cannot be counted, since right boundary is open. Hence decrement ans by 1*/
 			for (int k = startprefix; k != endprefix + 1; ++k){
 				if (suggestions_male[k].find(END) != NULL){
 					--ans;
 					break;
 				}
 			}
+			if (end != NULL && end->data >= END){
+				--ans;
+			}
 
 			return ans;
 		}
 
-		//Do query for female names, essentially similar to query_male, called by Query Function
+		//Do query for female names, essentially similar to query_male
 		int query_female(string START, string END){
 			int ans = 0;
 			int startprefix = char_to_int(START[0]), endprefix = char_to_int(END[0]);
@@ -437,14 +469,14 @@ class PS4{
 			auto end = suggestions_female[endprefix].upper_bound(END);
 			
 			if (startprefix == endprefix){		
-				ans = distance(start, end);
+				ans = suggestions_female[startprefix].distance(start, end);
 			}
 			else{
-				ans += distance(start, suggestions_female[startprefix].end());
+				ans += suggestions_female[startprefix].distance(start, suggestions_female[startprefix].end());
 				for (int j = startprefix + 1; j < endprefix; ++j){
 					ans += suggestions_female[j].size();
 				}
-				ans += distance(suggestions_female[endprefix].begin(), end);
+				ans += suggestions_female[endprefix].distance(suggestions_female[endprefix].begin(), end);
 			}
 
 			for (int k = startprefix; k != endprefix + 1; ++k){
@@ -453,33 +485,36 @@ class PS4{
 					break;
 				}
 			}
+			if (end != NULL && end->data >= END){
+				--ans;
+			}
 
 			return ans;
 		}
 
 	public:
 
-		void AddSuggestion(string babyName, int genderSuitability){
+		void AddSuggestion(string Name, int gender){
 
 			//Assign the name to its respective entry in male/female sets based on first letter of name
-			int prefix = char_to_int(babyName[0]);
-			switch (genderSuitability){
+			int prefix = char_to_int(Name[0]);
+			switch (gender){
 				case male:
-					suggestions_male[prefix].insert(babyName);
+					suggestions_male[prefix].insert(Name);
 					break;
 				case female:
-					suggestions_female[prefix].insert(babyName);
+					suggestions_female[prefix].insert(Name);
 					break;
 				default:
 					break;
 			}
 		}
 
-		void RemoveSuggestion(string babyName){
+		void RemoveSuggestion(string Name){
 
-			int prefix = char_to_int(babyName[0]);
-			suggestions_male[prefix].erase(babyName);
-			suggestions_female[prefix].erase(babyName);
+			int prefix = char_to_int(Name[0]);
+			suggestions_male[prefix].erase(Name);
+			suggestions_female[prefix].erase(Name);
 		}
 
 		int Query(string START, string END, int gender){
@@ -505,21 +540,21 @@ int main(int argc, char const *argv[])
 	PS4 CS2040C;
 
 	while(true) {
-		int cmd = 0, genderSuitability;
-		char babyName[32], START[32], END[32];
+		int cmd = 0, gender;
+		char Name[32], START[32], END[32];
 		scanf("%d", &cmd);
 		if (cmd == 0) break;
 		else if(cmd == 1){
-			scanf("%s%d", babyName, &genderSuitability);
-			CS2040C.AddSuggestion(string(babyName), genderSuitability);
+			scanf("%s%d", Name, &gender);
+			CS2040C.AddSuggestion(string(Name), gender);
 		}
 		else if(cmd == 2){
-			scanf("%s", babyName);
-			CS2040C.RemoveSuggestion(string(babyName));
+			scanf("%s", Name);
+			CS2040C.RemoveSuggestion(string(Name));
 		}
 		else if(cmd == 3){
-			scanf("%s%s%d", START, END, &genderSuitability);
-			int ans = CS2040C.Query(string(START), string(END), genderSuitability);
+			scanf("%s%s%d", START, END, &gender);
+			int ans = CS2040C.Query(string(START), string(END), gender);
 			printf("%d\n", ans);
 		}
 	}
